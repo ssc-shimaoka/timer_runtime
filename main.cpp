@@ -7,7 +7,6 @@
 myMicroBit    uBit;
 Model         model;
 
-
 //------------------------------------------------
 //  イベントハンドラ
 //------------------------------------------------
@@ -58,6 +57,18 @@ void onButtonAB(MicroBitEvent e)
     }
 }
 
+void onTimerEvent()
+{
+    uBit.serial.send("in event");
+    if(model.timerStatus == 1)
+    {
+        uBit.display.scroll("HAPPY!!");
+        model.timerFlg = 1;
+        model.timerStatus = 0;
+    }
+}
+
+//----------------------------------------------------------------------------------
 int getBlockNum()
 {
     model.operatingTime = uBit.systemTime();
@@ -126,6 +137,9 @@ int main()
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_EVT_ANY, onButtonB);
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_AB, MICROBIT_EVT_ANY, onButtonAB);
 
+    //MicroBitEvent onTimerEvent(MICROBIT_ID_ANY, MICROBIT_EVT_ANY, CREATE_ONLY);
+    //uBit.messageBus.listen(MICROBIT_ID_ANY, MICROBIT_EVT_ANY, onTimerEvent);
+
     // main ループ
     while(1) 
     {
@@ -136,6 +150,11 @@ int main()
             int block = getBlockNum();
             dispBlock(block);
 
+            if(model.elapsedTime <= 0 && model.timerFlg == 0)
+            {
+                uBit.serial.send("send event");
+                onTimerEvent();
+            }
         }else{
 
         }

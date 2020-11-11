@@ -17,6 +17,7 @@ class Model
         long pauseEndTime;
         long pauseTotalTime;
         
+        int timerFlg;
     public:
         Model();
         void init();
@@ -29,8 +30,8 @@ Model::Model()
 void Model::init()
 {
     appMode = 0;
-    blockNumber = 6;
-    blockSurvivalTime = 30;
+    blockNumber = 2;
+    blockSurvivalTime = 10;
     timerStatus = 0;
         
     setTime = 0;
@@ -43,5 +44,7 @@ void Model::init()
     pauseStartTime = 0;
     pauseEndTime = 0;
     pauseTotalTime = 0;
+
+    timerFlg = 0;
 }
 
