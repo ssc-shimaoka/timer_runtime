@@ -10,7 +10,10 @@ Model         model;
 //------------------------------------------------
 //  イベントハンドラ
 //------------------------------------------------
-// Aボタン押下時
+/***
+ *  Aボタン押下イベント
+ * 
+ */
 void onButtonA(MicroBitEvent e)
 {
     if (e.value == MICROBIT_BUTTON_EVT_CLICK)
@@ -21,6 +24,7 @@ void onButtonA(MicroBitEvent e)
             model.setTime = model.blockNumber * model.blockSurvivalTime * model.updateInterval;
             model.startTime = uBit.systemTime();
             model.timerStatus = 1;
+            //model.elapsedTime = 2000;
 
             uBit.serial.send(model.setTime);
             uBit.serial.send("\n");
@@ -33,6 +37,10 @@ void onButtonA(MicroBitEvent e)
     }
 }
 
+/***
+ *  Bボタン押下イベント
+ * 
+ */
 void onButtonB(MicroBitEvent e)
 {
     if (e.value == MICROBIT_BUTTON_EVT_CLICK)
@@ -45,6 +53,10 @@ void onButtonB(MicroBitEvent e)
     }
 }
 
+/***
+ *  A+Bボタン押下イベント
+ * 
+ */
 void onButtonAB(MicroBitEvent e)
 {
     if (e.value == MICROBIT_BUTTON_EVT_CLICK)
@@ -57,6 +69,13 @@ void onButtonAB(MicroBitEvent e)
     }
 }
 
+//------------------------------------------------
+//  関数
+//------------------------------------------------
+/***
+ *  タイマー満了処理
+ * 
+ */
 void onTimerEvent()
 {
     uBit.serial.send("in event");
@@ -68,55 +87,46 @@ void onTimerEvent()
     }
 }
 
-//----------------------------------------------------------------------------------
+/***
+ *  残りブロック数計算
+ * 
+ */
 int getBlockNum()
 {
+    // 現在の稼働時間取得
     model.operatingTime = uBit.systemTime();
+    // 残りブロック数計算
     model.elapsedTime = (model.setTime - (int)(model.operatingTime - model.startTime));
-    //uBit.serial.send(model.elapsedTime);
-
-    int block = (model.elapsedTime / model.blockSurvivalTime / model.updateInterval) + 1;
-    uBit.serial.send(block);
+    int block = (model.elapsedTime / model.blockSurvivalTime / model.updateInterval);
+    
     return block;
 }
 
+/***
+ *  ブロック表示処理
+ * 
+ */
 void dispBlock(int block)
 {   
-    //int y = block / 5 - 1;
-    //int x = block % y;
+    int line = block / 5;
+    int individual = block % 5;
 
-    MicroBitImage block00("0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n");
-    MicroBitImage block01("0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n1,0,0,0,0\n");
-    MicroBitImage block02("0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n");
-    MicroBitImage block03("0,0,0,0,0\n0,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n");
-    MicroBitImage block04("0,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n");
-    MicroBitImage block05("1,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n");
-    MicroBitImage block06("1,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n1,1,0,0,0\n");
-    MicroBitImage block07("1,0,0,0,0\n1,0,0,0,0\n1,0,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n");
-    MicroBitImage block08("1,0,0,0,0\n1,0,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n");
-    MicroBitImage block09("1,0,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n");
-    MicroBitImage block10("1,1,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n");
-    MicroBitImage block11("1,1,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n1,1,1,0,0\n");
-    MicroBitImage block12("1,1,0,0,0\n1,1,0,0,0\n1,1,0,0,0\n1,1,1,0,0\n1,1,1,0,0\n");
-    MicroBitImage block13("1,1,0,0,0\n1,1,0,0,0\n1,1,1,0,0\n1,1,1,0,0\n1,1,1,0,0\n");
-    MicroBitImage block14("1,1,0,0,0\n1,1,1,0,0\n1,1,1,0,0\n1,1,1,0,0\n1,1,1,0,0\n");
-    MicroBitImage block15("1,1,1,0,0\n1,1,1,0,0\n1,1,1,0,0\n1,1,1,0,0\n1,1,1,0,0\n");
-    MicroBitImage block16("1,1,1,0,0\n1,1,1,0,0\n1,1,1,0,0\n1,1,1,0,0\n1,1,1,1,0\n");
-    MicroBitImage block17("1,1,1,0,0\n1,1,1,0,0\n1,1,1,0,0\n1,1,1,1,0\n1,1,1,1,0\n");
-    MicroBitImage block18("1,1,1,0,0\n1,1,1,0,0\n1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,0\n");
-    MicroBitImage block19("1,1,1,0,0\n1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,0\n");
-    MicroBitImage block20("1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,0\n");
-    MicroBitImage block21("1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,1\n");
-    MicroBitImage block22("1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,1\n1,1,1,1,1\n");
-    MicroBitImage block23("1,1,1,1,0\n1,1,1,1,0\n1,1,1,1,1\n1,1,1,1,1\n1,1,1,1,1\n");
-    MicroBitImage block24("1,1,1,1,0\n1,1,1,1,1\n1,1,1,1,1\n1,1,1,1,1\n1,1,1,1,1\n");
-    MicroBitImage block25("1,1,1,1,1\n1,1,1,1,1\n1,1,1,1,1\n1,1,1,1,1\n1,1,1,1,1\n");
+    MicroBitImage Block("0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n0,0,0,0,0\n");
 
-    MicroBitImage BlockArrey[] = {block00,block01,block02,block03,block04,block05,block06,block07,block08,block09,
-                                  block10,block11,block12,block13,block14,block15,block16,block17,block18,block19,
-                                  block20,block21,block22,block23,block24,block25};
+    for(int i = 0; i < line; i ++)
+    {
+        Block.setPixelValue(i,0,255);
+        Block.setPixelValue(i,1,255);
+        Block.setPixelValue(i,2,255);
+        Block.setPixelValue(i,3,255);
+        Block.setPixelValue(i,4,255);
+    }
 
-    uBit.display.print(BlockArrey[block]);
+    for(int j = 0; j <= individual; j++)
+    {
+        Block.setPixelValue(line,4-j,255);
+    }
+    uBit.display.print(Block);
 }
 
 //------------------------------------------------
@@ -137,9 +147,6 @@ int main()
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_EVT_ANY, onButtonB);
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_AB, MICROBIT_EVT_ANY, onButtonAB);
 
-    //MicroBitEvent onTimerEvent(MICROBIT_ID_ANY, MICROBIT_EVT_ANY, CREATE_ONLY);
-    //uBit.messageBus.listen(MICROBIT_ID_ANY, MICROBIT_EVT_ANY, onTimerEvent);
-
     // main ループ
     while(1) 
     {
@@ -155,8 +162,6 @@ int main()
                 uBit.serial.send("send event");
                 onTimerEvent();
             }
-        }else{
-
         }
     }
 }
