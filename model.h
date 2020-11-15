@@ -31,7 +31,7 @@ void Model::init()
 {
     appMode = 0;
     blockNumber = 25;
-    blockSurvivalTime = 10;
+    blockSurvivalTime = 5;
     timerStatus = 0;
         
     setTime = 0;

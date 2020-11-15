@@ -7,6 +7,8 @@
 myMicroBit    uBit;
 Model         model;
 
+void initTimer();
+void RingCYARUMERA();
 //------------------------------------------------
 //  イベントハンドラ
 //------------------------------------------------
@@ -21,10 +23,9 @@ void onButtonA(MicroBitEvent e)
         // タイマー状態：待ち受け時
         if(model.timerStatus == 0)
         {
-            model.setTime = model.blockNumber * model.blockSurvivalTime * model.updateInterval;
+            initTimer();
             model.startTime = uBit.systemTime();
             model.timerStatus = 1;
-            //model.elapsedTime = 2000;
 
             uBit.serial.send(model.setTime);
             uBit.serial.send("\n");
@@ -73,17 +74,39 @@ void onButtonAB(MicroBitEvent e)
 //  関数
 //------------------------------------------------
 /***
+ *  タイマー初期化処理
+ * 
+ */
+void initTimer()
+{
+    // タイマー状態：待ち受け時
+    if(model.timerStatus == 0)
+    {
+        model.setTime = model.blockNumber * model.blockSurvivalTime * model.updateInterval;
+        model.timerFlg = 0;
+        model.operatingTime = 0;
+        model.startTime = 0;
+        model.elapsedTime = 0;
+        model.pauseStartTime = 0;
+        model.pauseEndTime = 0;
+        model.pauseTotalTime = 0;
+    }
+}
+
+/***
  *  タイマー満了処理
  * 
  */
 void onTimerEvent()
 {
-    uBit.serial.send("in event");
+    //uBit.serial.send("in event");
     if(model.timerStatus == 1)
     {
-        uBit.display.scroll("HAPPY!!");
         model.timerFlg = 1;
         model.timerStatus = 0;
+        uBit.display.scrollAsync("HAPPY!!");
+
+        RingCYARUMERA();
     }
 }
 
@@ -106,8 +129,8 @@ int getBlockNum()
  *  ブロック表示処理
  * 
  */
-void dispBlock(int block)
-{   
+void dispBlock(int block, int z)
+{  
     int line = block / 5;
     int individual = block % 5;
 
@@ -124,9 +147,57 @@ void dispBlock(int block)
 
     for(int j = 0; j <= individual; j++)
     {
-        Block.setPixelValue(line,4-j,255);
+        if(j == individual)
+        {
+            Block.setPixelValue(line, 4-j, 255);
+            uint8_t lightLevel = (uint8_t)(255 / z);
+            uBit.serial.send(lightLevel);
+        }else{
+            Block.setPixelValue(line,4-j,255);
+        }
     }
+
     uBit.display.print(Block);
+}
+
+/***
+ * チャルメラ鳴らす
+ * 
+ */
+void RingCYARUMERA()
+{
+    // チャルメラ？
+    uBit.io.P0.setAnalogValue(512);
+
+    uBit.io.P0.setAnalogPeriodUs(5000); // ド（低）
+    uBit.sleep(500);
+    uBit.io.P0.setAnalogPeriodUs(4500); // レ
+    uBit.sleep(500);
+    uBit.io.P0.setAnalogPeriodUs(4000); // ミ
+    uBit.sleep(500);
+    uBit.io.P0.setAnalogPeriodUs(4500); // レ
+    uBit.sleep(500);
+    uBit.io.P0.setAnalogPeriodUs(5000); // ド
+    uBit.sleep(500);
+
+    uBit.io.P0.setAnalogValue(0);
+    uBit.sleep(500);
+
+    uBit.io.P0.setAnalogValue(512);
+    uBit.io.P0.setAnalogPeriodUs(5000); // ド（低）
+    uBit.sleep(500);
+    uBit.io.P0.setAnalogPeriodUs(4500); // レ
+    uBit.sleep(500);
+    uBit.io.P0.setAnalogPeriodUs(4000); // ミ
+    uBit.sleep(500);
+    uBit.io.P0.setAnalogPeriodUs(4500); // レ
+    uBit.sleep(500);
+    uBit.io.P0.setAnalogPeriodUs(5000); // ド
+    uBit.sleep(500);
+
+    uBit.io.P0.setAnalogPeriodUs(4500); // レ
+    uBit.sleep(3000);
+    uBit.io.P0.setAnalogValue(0);
 }
 
 //------------------------------------------------
@@ -140,13 +211,13 @@ int main()
     
     // モデルインスタンス初期化
     model.init();
-    uBit.display.scroll(model.blockNumber);
 
     // イベント登録
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_EVT_ANY, onButtonA);
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_EVT_ANY, onButtonB);
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_AB, MICROBIT_EVT_ANY, onButtonAB);
 
+    int z = 1;
     // main ループ
     while(1) 
     {
@@ -154,8 +225,13 @@ int main()
         //  タイマー状態：動作時
         if(model.timerStatus == 1)
         {
+            if(z > model.blockSurvivalTime)
+            {
+                z = 1;
+            }
             int block = getBlockNum();
-            dispBlock(block);
+            dispBlock(block, z);
+            z = z + 1;
 
             if(model.elapsedTime <= 0 && model.timerFlg == 0)
             {
