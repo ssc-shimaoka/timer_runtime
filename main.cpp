@@ -149,14 +149,15 @@ void dispBlock(int block, int z)
     {
         if(j == individual)
         {
-            Block.setPixelValue(line, 4-j, 255);
             uint8_t lightLevel = (uint8_t)(255 / z);
             uBit.serial.send(lightLevel);
+            Block.setPixelValue(line, 4-j, lightLevel);
         }else{
-            Block.setPixelValue(line,4-j,255);
+            Block.setPixelValue(line, 4-j, 255);
         }
     }
 
+    uBit.display.setDisplayMode(DISPLAY_MODE_GREYSCALE);
     uBit.display.print(Block);
 }
 
@@ -166,37 +167,37 @@ void dispBlock(int block, int z)
  */
 void RingCYARUMERA()
 {
-    // チャルメラ？
+    // チャルメラ
     uBit.io.P0.setAnalogValue(512);
 
-    uBit.io.P0.setAnalogPeriodUs(5000); // ド（低）
+    uBit.io.P0.setAnalogPeriodUs(2551); // ソ
+    uBit.sleep(300);
+    uBit.io.P0.setAnalogPeriodUs(2272); // ラ
+    uBit.sleep(300);
+    uBit.io.P0.setAnalogPeriodUs(2024); // シ
     uBit.sleep(500);
-    uBit.io.P0.setAnalogPeriodUs(4500); // レ
-    uBit.sleep(500);
-    uBit.io.P0.setAnalogPeriodUs(4000); // ミ
-    uBit.sleep(500);
-    uBit.io.P0.setAnalogPeriodUs(4500); // レ
-    uBit.sleep(500);
-    uBit.io.P0.setAnalogPeriodUs(5000); // ド
+    uBit.io.P0.setAnalogPeriodUs(2272); // ラ
+    uBit.sleep(300);
+    uBit.io.P0.setAnalogPeriodUs(2551); // ソ
     uBit.sleep(500);
 
     uBit.io.P0.setAnalogValue(0);
     uBit.sleep(500);
 
     uBit.io.P0.setAnalogValue(512);
-    uBit.io.P0.setAnalogPeriodUs(5000); // ド（低）
+    uBit.io.P0.setAnalogPeriodUs(2551); // ソ
+    uBit.sleep(300);
+    uBit.io.P0.setAnalogPeriodUs(2272); // ラ
+    uBit.sleep(300);
+    uBit.io.P0.setAnalogPeriodUs(2024); // シ
     uBit.sleep(500);
-    uBit.io.P0.setAnalogPeriodUs(4500); // レ
-    uBit.sleep(500);
-    uBit.io.P0.setAnalogPeriodUs(4000); // ミ
-    uBit.sleep(500);
-    uBit.io.P0.setAnalogPeriodUs(4500); // レ
-    uBit.sleep(500);
-    uBit.io.P0.setAnalogPeriodUs(5000); // ド
+    uBit.io.P0.setAnalogPeriodUs(2272); // ラ
+    uBit.sleep(300);
+    uBit.io.P0.setAnalogPeriodUs(2551); // ソ
     uBit.sleep(500);
 
-    uBit.io.P0.setAnalogPeriodUs(4500); // レ
-    uBit.sleep(3000);
+    uBit.io.P0.setAnalogPeriodUs(2272); // ラ
+    uBit.sleep(2000);
     uBit.io.P0.setAnalogValue(0);
 }
 
@@ -208,14 +209,27 @@ int main()
     // MicroBitインスタンス初期化
     uBit.init();
     //uBit.serial.send("hello\n");
-    
+
+    int abc = 3;
+    uBit.storage.put("keyword", (uint8_t *)&abc, sizeof(int));
+
+    KeyValuePair* value = uBit.storage.get("keyword");
+    int xyz = 0;
+    uBit.serial.send(xyz);
+
+    xyz = *value->value;
+    uBit.serial.send(xyz);
+
+
     // モデルインスタンス初期化
     model.init();
+
 
     // イベント登録
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_EVT_ANY, onButtonA);
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_EVT_ANY, onButtonB);
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_AB, MICROBIT_EVT_ANY, onButtonAB);
+    //uBit.messageBus.listen(MICROBIT_ID_TIMER_FULL, MICROBIT_EVT_ANY, onTimerEvent);
 
     int z = 1;
     // main ループ
@@ -237,6 +251,7 @@ int main()
             {
                 uBit.serial.send("send event");
                 onTimerEvent();
+
             }
         }
     }
